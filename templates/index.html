@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시판</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @media (min-width: 992px) {
+            .navbar-expand-lg {
+                flex-wrap: nowrap;
+            }
+        }
+        /*flash메시지 색 변경*/
+        .alert-custom {    
+            background-color: #f8f9fa; /* 연한 회색 */
+            color: #212529;         
+            border: 1px solid #dee2e6; 
+        }
+       
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">게시판</a>
+        <div style="float:right;">
+            {% if session.get('userid') %}
+                <span style="color:#fff;" class="me-3">환영합니다, {{ session.get('username') }} 님!</span>
+                {% if session.get('is_admin') %}
+                    <a href="/admin" class="btn btn-warning me-2">관리자 페이지</a>
+                {% endif %}
+                <a href="/logout" class="btn btn-danger">로그아웃</a>
+            {% else %}
+                <a href="/login" class="btn btn-success">로그인</a>
+            {% endif %}
+        </div>
+    </nav>
+    <!-- flash메시지 -->
+    <div class="container mt-4" style="text-align:center;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div>
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}   
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>게시글 목록</h2>
+    {% if session['userid'] %}
+    <a href="/post/add" class="btn btn-primary">
+        <i class="fas fa-plus"></i> 글쓰기
+    </a>
+    {% else %}
+    <p class="text-muted"></p>
+    {% endif %}
+
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th style="text-align:center;width:70px;">번호</th>
+                <th style="text-align:center;width:150px;">이미지</th>
+                <th>제목</th>
+                <th style="text-align:center;width:150px;">작성자</th>
+                <th style="text-align:center;width:150px;">작성일</th>
+                <th style="text-align:center;width:100px;">조회수</th>
+                <th style="text-align:center;width:100px;">첨부</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td>{{ post.id }}</td>
+                <td>
+                    {% if post.filename and post.filename.endswith(('.png', '.jpg', '.jpeg', '.gif')) %}
+                    <img src="/static/uploads/{{ post.filename }}" alt="첨부 이미지" class="img-thumbnail" style="width: 50px;">
+                    {% else %}
+                    <div class="no-image">이미지 없음</div>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="/post/{{ post.id }}" class="text-decoration-none">
+                        {{ post.title }}
+                    </a>
+                </td>
+                <td>{{ post.author }}</td> 
+                <td>{{ post.created_at }}</td>
+                <td>{{ post.views }}</td>
+                <td>
+                    {% if post.filename %}
+                    <i class="fas fa-paperclip"></i>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        <!-- 이전 버튼 -->
+        <li class="page-item {% if page == 1 %}disabled{% endif %}">  <!--페이지가 1이면 비활성화-->
+            <a class="page-link" href="/?page={{ page - 1 }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo; 이전</span>
+            </a>
+        </li>
+
+        <!-- 페이지 번호 버튼 -->
+        {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {% if page == p %}active{% endif %}">
+            <a class="page-link" href="/?page={{ p }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+
+        <!-- 다음 버튼 -->
+        <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+            <a class="page-link" href="/?page={{ page + 1 }}" aria-label="Next">
+                <span aria-hidden="true">다음 &raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 로그아웃 flash메시지 3초 후 사라지게 -->
+    <script>
+        setTimeout(function() {
+            var alert = document.querySelector('.alert');
+            if (alert) {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+                setTimeout(() => alert.remove(), 500); // 완전히 DOM에서 제거
+            }
+        }, 3000); // 3초 후에 메시지 자동 제거
+    </script>
+</body>
+</html>
