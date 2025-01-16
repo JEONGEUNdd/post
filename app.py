@@ -69,7 +69,6 @@ def view_post(id):
     post = manager.get_post_by_id(id)
     return render_template('view.html',post=post)
 
-
 # 내용추가
 # 파일업로드: enctype="multipart/form-data", method='POST', type='file', accept=".png,.jpg,.gif" 
 @app.route('/post/add', methods=['GET', 'POST'])
